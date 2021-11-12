@@ -13,3 +13,9 @@ Why not?
 6. Visit http://localhost:8080 in your browser
 7. You might want to set up a cronjob (e.g. monthly) for step 4, as it will stop running once the entire internet has been scanned
 8. You might also want to change the command inside `populate-db.sh` depending on your available bandwidth
+
+## Coming Soon™
+* Nicer web interface
+* Minecraft Realms API client, so you can access the database from within MC
+* Try connecting in offline mode, to gather more info about servers
+* Just generally making it better
