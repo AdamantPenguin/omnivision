@@ -1,0 +1,70 @@
+body {
+    font-family: sans-serif;
+    margin: 5px;
+}
+
+hr {
+    border: none;
+    border-top: 2px solid black;
+}
+
+#server-search, #player-search {
+    width: 100%;
+}
+
+.card-list {
+    height: 90vh;
+    overflow: auto;
+    list-style-type: none;
+    padding: 0;
+    margin-top: 0;
+}
+
+.card-list > li {
+    padding: 10px;
+    margin: 2px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+    background-color: rgb(214, 214, 214);
+}
+
+.card-list > li:hover {
+    background-color: rgb(230, 230, 230);
+}
+
+.server-list, .player-list {
+    width: 30vw;
+    float: left;
+}
+
+.server-list > * > li {
+    min-height: 64px;
+}
+
+.server-icon {
+    float: right;
+    margin: 0;
+}
+
+.server-details, .player-details {
+    float: left;
+    margin-left: 10px;
+    max-width: 60vw;
+    height: 90vh;
+    overflow: auto;
+}
+
+.motd {
+    white-space: pre;
+    background-color: black;
+    color: white;
+    font-family: monospace;
+    padding: 5px;
+    width: 55ch;
+    height: 2rem;
+    overflow: auto;
+}
+
+details > ul {
+    margin: 4px;
+}

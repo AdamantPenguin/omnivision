@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>servers - omnivision</title>
+        <link rel="stylesheet" href="style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script defer src="servers.js"></script>
+    </head>
+    <body>
+        <nav>
+            <strong>omnivision</strong> |
+            <a href="/">overview</a>
+            servers
+            <a href="players.html">players</a>
+            <hr>
+        </nav>
+        <main>
+            <div class="server-list">
+                <input type="text" id="server-search" placeholder="Filter servers…">
+                <ul class="card-list" id="servers">
+                    <!--<li>
+                        <img src="pack.png" class="server-icon">
+                        <strong>255.255.255.255</strong><br>
+                        MOTD here<br>
+                        <small>Mods: 5</small>
+                    </li>-->
+                </ul>
+            </div>
+            <div class="server-details">
+                <h2>Details</h2><button id="refresh-server" disabled>Refresh</button><br>
+                <strong>Address:</strong> <code id="server-address"></code><br>
+                <strong>Game version:</strong> <code id="server-version"></code><br>
+                <strong>MOTD:</strong><br><div id="server-description" class="motd"></div>
+                <strong>Maximum players:</strong> <code id="server-max-players"></code><br>
+                <details id="server-players">
+                    <summary><strong>Players</strong></summary>
+                </details>
+                <strong>Modloader:</strong> <code id="server-modloader"></code><br>
+                <details id="server-mods">
+                    <summary><strong>Mods</strong></summary>
+                </details>
+            </div>
+        </main>
+    </body>
+</html>

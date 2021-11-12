@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>players - omnivision</title>
+        <link rel="stylesheet" href="style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script defer src="players.js"></script>
+    </head>
+    <body>
+        <nav>
+            <strong>omnivision</strong> |
+            <a href="/">overview</a>
+            <a href="servers.html">servers</a>
+            players
+            <hr>
+        </nav>
+        <main>
+            <div class="player-list">
+                <input type="text" id="player-search" placeholder="Filter players…">
+                <ul class="card-list" id="players">
+                    <!--<li>
+                        <strong>Username</strong><br>
+                        <small>UUID</small>
+                    </li>-->
+                </ul>
+            </div>
+            <div class="player-details">
+                <h2>Details</h2>
+                <strong>Current username:</strong> <code id="player-username"></code><br>
+                <strong>UUID:</strong> <code id="player-uuid"></code><br>
+                <details id="player-servers">
+                    <summary><strong>Servers</strong></summary>
+                </details>
+            </div>
+        </main>
+    </body>
+</html>
