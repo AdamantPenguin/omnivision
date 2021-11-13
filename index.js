@@ -59,7 +59,7 @@ const listPlayers = async (limit, offset, filter) => {
     filter = filter || ""
     return formatRawData(
         await players.opts.store.query(
-            `SELECT * FROM keyv WHERE "key" LIKE 'players:% AND ("key" LIKE '%${filter}%' OR "value" LIKE '%${filter}%') LIMIT ${limit} OFFSET ${offset};`
+            `SELECT * FROM keyv WHERE "key" LIKE 'players:%' AND ("key" LIKE '%${filter}%' OR "value" LIKE '%${filter}%') LIMIT ${limit} OFFSET ${offset};`
         ),
         true
     )
@@ -169,7 +169,8 @@ app.get("/api/v1/count/servers", async (req, res) => {
 app.get("/api/v1/players", async (req, res) => {
     const limit = req.query.limit || -1
     const offset = req.query.offset || 0
-    res.send(await listPlayers(limit, offset))
+    const filter = req.query.filter || ""
+    res.send(await listPlayers(limit, offset, filter))
 })
 
 app.get("/api/v1/players/:uuid", async (req, res) => {
@@ -182,7 +183,8 @@ app.delete("/api/v1/players/:uuid", async (req, res) => {
 })
 
 app.get("/api/v1/count/players", async (req, res) => {
-    res.send(await countPlayers())
+    const filter = req.query.filter || ""
+    res.send(await countPlayers(filter))
 })
 
 app.post("/api/v1/formatDescription", (req, res) => {  // in case of third party clients who want this standalone
