@@ -9,11 +9,15 @@ hr {
 }
 
 #server-search, #player-search {
-    width: 100%;
+    width: 85%;
+}
+
+#search-go {
+    width: 10%
 }
 
 .card-list {
-    height: 90vh;
+    height: 85vh;
     overflow: auto;
     list-style-type: none;
     padding: 0;

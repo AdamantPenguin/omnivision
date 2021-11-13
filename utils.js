@@ -31,7 +31,7 @@ exports.formatPingResult = (result) => {
         })
     }
 
-    try {  // add the players to the list (jank)
+    try {  // add the players to the list
         for (var i = 0; i < result.players.sample.length; i++) {
             if (this.isValidUsername(result.players.sample[i].name)) {
                 output.players.users[result.players.sample[i].id] = result.players.sample[i].name

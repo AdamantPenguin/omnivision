@@ -32,30 +32,44 @@ const formatRawData = (rawData, deleteNamespace) => {
     return output
 }
 
-const listServers = async (count) => {
-    count = count || -1
+const listServers = async (limit, offset, filter) => {
+    limit = limit || -1
+    offset = offset || 0
+    filter = filter || ""
     return formatRawData(
-        await servers.opts.store.query(`SELECT * FROM keyv WHERE "key" LIKE '%servers:%' ESCAPE '\\' LIMIT ${count};`),
+        await servers.opts.store.query(
+            `SELECT * FROM keyv WHERE "key" LIKE 'servers:%' AND ("key" LIKE '%${filter}%' OR "value" LIKE '%${filter}%') LIMIT ${limit} OFFSET ${offset};`
+        ),
         true
     )
 }
 
-const countServers = async () => {
-    const rawData = await servers.opts.store.query("SELECT count(*) FROM keyv WHERE \"key\" LIKE '%servers:%'")
+const countServers = async (filter) => {
+    filter = filter || ""
+    const rawData = await servers.opts.store.query(
+        `SELECT count(*) FROM keyv WHERE "key" LIKE 'servers:%' AND ("key" LIKE '%${filter}%' OR "value" LIKE '%${filter}%');`
+    )
     return rawData[0]["count(*)"].toString()
 }
 
 
-const listPlayers = async (count) => {
-    count = count || -1
+const listPlayers = async (limit, offset, filter) => {
+    limit = limit || -1
+    offset = offset || 0
+    filter = filter || ""
     return formatRawData(
-        await players.opts.store.query(`SELECT * FROM keyv WHERE "key" LIKE '%players:%' ESCAPE '\\' LIMIT ${count};`),
+        await players.opts.store.query(
+            `SELECT * FROM keyv WHERE "key" LIKE 'players:% AND ("key" LIKE '%${filter}%' OR "value" LIKE '%${filter}%') LIMIT ${limit} OFFSET ${offset};`
+        ),
         true
     )
 }
     
-const countPlayers = async () => {
-    const rawData = await players.opts.store.query("SELECT count(*) FROM keyv WHERE \"key\" LIKE '%players:%'")
+const countPlayers = async (filter) => {
+    filter = filter || ""
+    const rawData = await players.opts.store.query(
+        `SELECT count(*) FROM keyv WHERE \"key\" LIKE 'players:%' AND ("key" LIKE '%${filter}%' OR "value" LIKE '%${filter}%');`
+    )
     return rawData[0]["count(*)"].toString()
 }
 
@@ -110,7 +124,10 @@ app.use(express.static("public"))
 app.use(express.json())
 
 app.get("/api/v1/servers", async (req, res) => {  // send a limited set of data to reduce traffic
-    const allServers = await listServers()
+    const limit = req.query.limit || -1
+    const offset = req.query.offset || 0
+    const filter = req.query.filter || ""
+    const allServers = await listServers(limit, offset, filter)
     const responseData = {}
     Object.entries(allServers).forEach((server) => {
         responseData[server[0]] = {
@@ -145,11 +162,14 @@ app.delete("/api/v1/servers/:ip", async (req, res) => {
 })
 
 app.get("/api/v1/count/servers", async (req, res) => {
-    res.send(await countServers())
+    const filter = req.query.filter || ""
+    res.send(await countServers(filter))
 })
 
 app.get("/api/v1/players", async (req, res) => {
-    res.send(await listPlayers())
+    const limit = req.query.limit || -1
+    const offset = req.query.offset || 0
+    res.send(await listPlayers(limit, offset))
 })
 
 app.get("/api/v1/players/:uuid", async (req, res) => {
