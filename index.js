@@ -3,7 +3,7 @@
 
 const { toHTML: motdToHTML, parse: parseMotd } = require("minecraft-motd-util")
 const pinger = require("minecraft-ping-js")
-const { formatPingResult, isValidUsername } = require("./save-ips")
+const { formatPingResult, isValidUsername } = require("./utils")
 const Keyv = require("keyv")
 const servers = new Keyv("sqlite://db.sqlite", { namespace: "servers" })
 const players = new Keyv("sqlite://db.sqlite", { namespace: "players" })
@@ -60,29 +60,22 @@ const countPlayers = async () => {
 }
 
 const updateServer = async (address) => {
+    const serverDbInfo = await servers.get(address)
     try {
         const result = await pinger.pingWithPromise(address, 25565)
         const formattedResult = formatPingResult(result)
-        const serverDbInfo = await servers.get(address)
         serverDbInfo.lastUpdated = Date.now()
         serverDbInfo.description = formattedResult.description
         serverDbInfo.players.max = formattedResult.players.max
-        serverDbInfo.players.users = serverDbInfo.players.users.concat(formattedResult.players.users)  // merge users
+        Object.assign(serverDbInfo.players.users, formattedResult.players.users)  // merge users
         serverDbInfo.version = formattedResult.version
         serverDbInfo.modloader = formattedResult.modloader
         serverDbInfo.mods = formattedResult.mods
         serverDbInfo.icon = formattedResult.icon
-        for (var i = 0; i < serverDbInfo.players.users.length; i++) {
-            try {
-                if (!isValidUsername(serverDbInfo.players.users[i].name)) {
-                    delete serverDbInfo.players.users[i]
-                }
-            } catch {}
-        }
         await servers.set(address, serverDbInfo)
         try {
             serverDbInfo.descriptionHtml = motdToHTML(parseMotd(serverDbInfo.description))
-        } catch (e) {
+        } catch {
             serverDbInfo.descriptionHtml = serverDbInfo.description
         }
         if (result.players.sample) {  // add this server to any players who are on it
@@ -90,7 +83,7 @@ const updateServer = async (address) => {
                 if (isValidUsername(playerInfo.name)) {
                     try {
                         const playerDbInfo = await players.get(playerInfo.id)
-                        playerDbInfo.servers.push(address)
+                        if (!playerDbInfo.servers.includes(address)) {playerDbInfo.servers.push(address)}
                         playerDbInfo.lastSeen = Date.now()
                         playerDbInfo.username = playerInfo.name
                         players.set(playerInfo.id, playerDbInfo)
@@ -105,9 +98,10 @@ const updateServer = async (address) => {
             })
         }
     } catch (e) {  // usually when the server is a bad or doesn't exist anymore
-        //await servers.delete(address)
-        console.log(e)
-        var serverDbInfo = null
+        if (e.code === "EHOSTUNREACH" || e.code === "ECONNREFUSED") {  // server is gone
+            await servers.delete(address)
+        }
+        // not doing anything with timed out errors as it could be due to high LAN usage
     }
     return serverDbInfo
 }
@@ -123,7 +117,7 @@ app.get("/api/v1/servers", async (req, res) => {  // send a limited set of data 
             description: server[1].description,
             version: server[1].version,
             modCount: server[1].mods.length,
-            playerCount: server[1].players.users.length,
+            playerCount: Object.entries(server[1].players.users).length,
             icon: server[1].icon
         }
         try {
@@ -145,6 +139,11 @@ app.get("/api/v1/servers/:ip", async (req, res) => {
     res.send(data)
 })
 
+app.delete("/api/v1/servers/:ip", async (req, res) => {
+    await servers.delete(req.params.ip)
+    res.send(true)
+})
+
 app.get("/api/v1/count/servers", async (req, res) => {
     res.send(await countServers())
 })
@@ -155,6 +154,11 @@ app.get("/api/v1/players", async (req, res) => {
 
 app.get("/api/v1/players/:uuid", async (req, res) => {
     res.send(await players.get(req.params.uuid))
+})
+
+app.delete("/api/v1/players/:uuid", async (req, res) => {
+    await players.delete(req.params.uuid)
+    res.send(true)
 })
 
 app.get("/api/v1/count/players", async (req, res) => {

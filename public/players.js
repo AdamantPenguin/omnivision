@@ -18,6 +18,7 @@ fetch("/api/v1/players").then((result) => {return result.json()}).then((players)
         playerExtra.innerText = `${data.servers.length || "no"} servers - ${uuid}`
 
         playerEntry.onclick = async (e) => {
+            document.querySelector("#remove-player").disabled = false
             const username = e.target.querySelector("strong").innerText
             selectedUsername.innerText = username
             const uuid = e.target.querySelector("small").innerText.split(" - ")[1]
@@ -46,6 +47,17 @@ document.querySelector("#player-search").onkeyup = (e) => {
             li.hidden = false
         } else {
             li.hidden = true
+        }
+    }
+}
+
+document.querySelector("#remove-player").onclick = async (e) => {
+    if (selectedUuid.innerText) {
+        if (confirm(`Are you sure you want to remove ${selectedUuid.innerText}? This can't be undone.`)) {
+            await fetch(`/api/v1/players/${selectedUuid.innerText}`, {
+                method: "DELETE"
+            })
+            window.location.reload(false)
         }
     }
 }

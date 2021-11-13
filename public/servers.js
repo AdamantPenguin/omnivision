@@ -2,7 +2,6 @@
 // allow searching in server list
 
 const serverList = document.querySelector("#servers")
-const refreshSelected = document.querySelector("#refresh-server")
 const selectedAddress = document.querySelector("#server-address")
 const selectedVersion = document.querySelector("#server-version")
 const selectedMaxPlayers = document.querySelector("#server-max-players")
@@ -14,7 +13,8 @@ const selectedModList = document.querySelector("#server-mods")
 const badVersion = "OHNOES😱😱😱😱😱😱😱😱😱😱😱😱😱😱😱😱😱"
 
 const updateServerDetails = (address, newData) => {
-    refreshSelected.disabled = false
+    document.querySelector("#refresh-server").disabled = false
+    document.querySelector("#remove-server").disabled = false
     selectedAddress.innerText = address
     selectedVersion.innerText = `${newData.version.name} (protocol ${newData.version.protocol})`
     selectedDescription.innerHTML = newData.descriptionHtml
@@ -23,11 +23,13 @@ const updateServerDetails = (address, newData) => {
     selectedPlayerList.innerHTML = ""
     const playersSummary = selectedPlayerList.appendChild(document.createElement("summary"))
     const playersStrong = playersSummary.appendChild(document.createElement("strong"))
-    playersStrong.innerText = `Players (${newData.players.users.length})`
+    playersStrong.innerText = `All players (${Object.entries(newData.players.users).length})`
     const playersUl = selectedPlayerList.appendChild(document.createElement("ul"))
-    newData.players.users.forEach((player) => {
+    Object.entries(newData.players.users).forEach((entry) => {
+        const uuid = entry[0]
+        const name = entry[1]
         const li = playersUl.appendChild(document.createElement("li"))
-        li.append(player.name)
+        li.append(name)
     })
 
     selectedLoader.innerText = newData.modloader
@@ -88,7 +90,7 @@ document.querySelector("#server-search").onkeyup = (e) => {
     }
 }
 
-refreshSelected.onclick = async (e) => {
+document.querySelector("#refresh-server").onclick = async (e) => {
     if (selectedAddress.innerText) {
         const newData = await (await fetch("/api/v1/updateServer", {
             method: "POST",
@@ -96,5 +98,16 @@ refreshSelected.onclick = async (e) => {
             headers: {"Content-Type": "application/json"}
         })).json()
         updateServerDetails(selectedAddress.innerText, newData)
+    }
+}
+
+document.querySelector("#remove-server").onclick = async (e) => {
+    if (selectedAddress.innerText) {
+        if (confirm(`Are you sure you want to remove ${selectedAddress.innerText}? This can't be undone.`)) {
+            await fetch(`/api/v1/servers/${selectedAddress.innerText}`, {
+                method: "DELETE"
+            })
+            window.location.reload(false)
+        }
     }
 }
