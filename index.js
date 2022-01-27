@@ -112,10 +112,10 @@ const updateServer = async (address) => {
             })
         }
     } catch (e) {  // usually when the server is a bad or doesn't exist anymore
-        if (e.code === "EHOSTUNREACH" || e.code === "ECONNREFUSED") {  // server is gone
+        // now deleting timed out servers as a lot of dead servers time out
+        if (e.code === "EHOSTUNREACH" || e.code === "ECONNREFUSED" || e.message.startsWith("Timed out")) {  // server is gone
             await servers.delete(address)
         }
-        // not doing anything with timed out errors as it could be due to high LAN usage
     }
     return serverDbInfo
 }
@@ -197,21 +197,23 @@ app.post("/api/v1/updateServer", async (req, res) => {
 
 app.listen(config.port, () => {
     console.log("Listening at " + config.port)
+    updateAllServers()  // initial update as soon as it starts
 })
 
 
 // update servers when their last update was too long ago
-setInterval(async () => {
-    console.log("Updating servers...")
+const updateAllServers = async () => {
     const servers = await listServers()
+    console.log("Updating servers...")
     const currentTimestamp = Date.now()
-    Object.entries(servers).forEach((entry) => {
+    for (const entry of Object.entries(servers)) {
         const address = entry[0]
         const data = entry[1]
-        if (currentTimestamp - data.lastUpdated >= 1000 * 60 * 60) {  // if it is at least one hour old
-            updateServer(address)
+        if (currentTimestamp - data.lastUpdated >= 1000 * 60 * 60 * 2) {  // if it is at least two hours old
+            await updateServer(address)
             console.log(`Updated ${address}`)
         }
-    })
+    }
     console.log("Done.")
-}, 1000 * 60 * 5)  // every 5 minutes
+    setTimeout(updateAllServers, 1000 * 60 * 5)  // update again in 5 minutes
+}
